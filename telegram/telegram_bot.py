@@ -14,7 +14,7 @@ import os
 # CONFIG
 # =========================
 TOKEN = "8102080453:AAFzlsvyPT5SinF7xeupONxS4XxvG9M9zYg"
-WEBSITE_LINK = "https://yourwebsite.com"
+WEBSITE_LINK = "https://brawlstars-autoplay.wuaze.com/index.html"
 
 DATA_FILE = "verified_users.json"
 
