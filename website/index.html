@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BrawlCamping Key Generator</title>
 
   <style>
@@ -19,21 +19,21 @@
       width: 280px;
       border-radius: 8px;
       border: none;
-      margin-top: 15px;
       font-size: 16px;
+      text-align: center;
     }
 
     button {
-      padding: 12px 22px;
+      padding: 12px 20px;
       margin-top: 20px;
-      border: none;
       border-radius: 8px;
+      border: none;
       cursor: pointer;
       font-weight: bold;
       font-size: 16px;
     }
 
-    #message {
+    #msg {
       margin-top: 35px;
       font-size: 18px;
       white-space: pre-line;
@@ -44,62 +44,69 @@
 <body>
 
   <h1>🔑 BrawlCamping Key Generator</h1>
-  <p>Enter your Telegram username to get your 24h key:</p>
+  <p>Enter your Telegram username to generate your 24-hour key:</p>
 
-  <input id="username" placeholder="Telegram Username (no @)" />
-  <br />
+  <input id="username" placeholder="Telegram username (no @)">
+  <br>
 
-  <button onclick="getKey()">Generate Key</button>
+  <!-- ✅ Button without onclick -->
+  <button id="btn">Generate Key</button>
 
-  <p id="message"></p>
+  <p id="msg"></p>
 
   <script>
-    // ✅ Backend API URL (IMPORTANT)
-    const API_URL = "http://localhost:5000/generate-key";
+    // ✅ Correct Render Backend Endpoint
+    const API_URL = "https://brawlcamping-api.onrender.com/generate-key";
 
-    async function getKey() {
+    async function generateKey() {
       const username = document.getElementById("username").value.trim();
-      const msg = document.getElementById("message");
+      const msg = document.getElementById("msg");
 
       if (username === "") {
         msg.innerText = "❌ Please enter a username.";
         return;
       }
 
-      msg.innerText = "⏳ Checking verification...";
+      msg.innerText = "⏳ Sending request to backend...";
 
       try {
-        const response = await fetch(API_URL, {
+        const res = await fetch(API_URL, {
           method: "POST",
+          mode: "cors",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({ username: username })
         });
 
-        const data = await response.json();
+        const data = await res.json();
 
-        // ❌ Not Verified
-        if (!response.ok) {
-          msg.innerText = "❌ " + data.error;
+        if (!res.ok) {
+          msg.innerText =
+            "❌ Backend Error:\n" +
+            (data.error || "Unknown error");
           return;
         }
 
-        // ✅ Verified + Key
         msg.innerText =
-          "✅ VERIFIED!\n\n" +
+          "✅ SUCCESS!\n\n" +
           "Your Key:\n" +
           data.key +
-          "\n\nExpires in 24 hours:\n" +
-          data.expires;
+          "\n\nExpires:\n" +
+          data.expires +
+          "\n\nPaste this key into your bot license file.";
 
-      } catch (error) {
+      } catch (err) {
         msg.innerText =
-          "❌ Could not connect to backend.\n\n" +
-          "Make sure Flask backend is running:\n" +
-          "python server.py";
+          "❌ Connection failed.\n\n" +
+          "Render might be sleeping.\n" +
+          "Wait 10 seconds and try again.\n\n" +
+          "Error:\n" + err;
       }
     }
+
+    // ✅ Button Click Event
+    document.getElementById("btn").addEventListener("click", generateKey);
   </script>
 
 </body>
