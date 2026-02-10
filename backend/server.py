@@ -10,27 +10,12 @@ from datetime import datetime, timedelta
 # APP SETUP
 # =========================
 app = Flask(__name__)
-CORS(app)  # ✅ Allow website requests (Fix for browser blocking)
+CORS(app)
 
 # =========================
 # FILE PATHS
 # =========================
-VERIFIED_FILE = "../telegram/verified_users.json"
 KEYS_FILE = "keys.json"
-
-
-# =========================
-# LOAD VERIFIED USERS
-# =========================
-def load_verified_users():
-    if not os.path.exists(VERIFIED_FILE):
-        return []
-
-    try:
-        with open(VERIFIED_FILE, "r") as f:
-            return json.load(f)
-    except:
-        return []
 
 
 # =========================
@@ -72,11 +57,8 @@ def generate_key_route():
     if username == "":
         return jsonify({"error": "No username provided"}), 400
 
-    verified_users = load_verified_users()
-
-    # Check if user is verified
-    if username not in verified_users:
-        return jsonify({"error": "User not verified. Verify in Telegram first."}), 403
+    # ✅ Render Fix: Verification Disabled
+    print("Verification disabled (Render online mode)")
 
     keys = load_keys()
 
