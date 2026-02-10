@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrawlCamping Key Generator</title>
+
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 80px;
+    }
+
+    input {
+      padding: 12px;
+      width: 280px;
+      border-radius: 8px;
+      border: none;
+      margin-top: 15px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 12px 22px;
+      margin-top: 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    #message {
+      margin-top: 35px;
+      font-size: 18px;
+      white-space: pre-line;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🔑 BrawlCamping Key Generator</h1>
+  <p>Enter your Telegram username to get your 24h key:</p>
+
+  <input id="username" placeholder="Telegram Username (no @)" />
+  <br />
+
+  <button onclick="getKey()">Generate Key</button>
+
+  <p id="message"></p>
+
+  <script>
+    // ✅ Backend API URL (IMPORTANT)
+    const API_URL = "http://localhost:5000/generate-key";
+
+    async function getKey() {
+      const username = document.getElementById("username").value.trim();
+      const msg = document.getElementById("message");
+
+      if (username === "") {
+        msg.innerText = "❌ Please enter a username.";
+        return;
+      }
+
+      msg.innerText = "⏳ Checking verification...";
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ username: username })
+        });
+
+        const data = await response.json();
+
+        // ❌ Not Verified
+        if (!response.ok) {
+          msg.innerText = "❌ " + data.error;
+          return;
+        }
+
+        // ✅ Verified + Key
+        msg.innerText =
+          "✅ VERIFIED!\n\n" +
+          "Your Key:\n" +
+          data.key +
+          "\n\nExpires in 24 hours:\n" +
+          data.expires;
+
+      } catch (error) {
+        msg.innerText =
+          "❌ Could not connect to backend.\n\n" +
+          "Make sure Flask backend is running:\n" +
+          "python server.py";
+      }
+    }
+  </script>
+
+</body>
+</html>

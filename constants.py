@@ -8,7 +8,7 @@ class Constants:
     change the brawler_name to the one you are using, if its not found,
     please manually change the speed,attack_range and heightScaleFactor below
     """
-    brawler_name = "SAMPLE_NAME"
+    brawler_name = "Shelly"
     
     """
     go to https://pixelcrux.com/Brawl_Stars/Brawlers/ to find your
@@ -17,9 +17,9 @@ class Constants:
     
     eg. eve's speed (2.4), attack_range (9.33) and heightScaleFactor (0.158)
     """
-    speed = 2.4 # units: (tiles per second)
-    attack_range = 9.33 # units: (tiles)
-    heightScaleFactor = 0.158
+    speed = 2.57 # units: (tiles per second)
+    attack_range = 7.67 # units: (tiles)
+    heightScaleFactor = 0.148
     
     #! Map's characteristics
     """
@@ -42,7 +42,7 @@ class Constants:
     focused_window = False
 
     #! Change this to True if you have Nvidia graphics card and CUDA installed
-    nvidia_gpu = False
+    nvidia_gpu = True
 
     # Main contants
     """

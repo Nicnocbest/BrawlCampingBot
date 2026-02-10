@@ -1,3 +1,5 @@
+from license_check import check_license
+check_license()
 import cv2 as cv
 from time import time,sleep
 from modules.windowcapture import WindowCapture
