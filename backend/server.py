@@ -1,25 +1,46 @@
-VERIFIED_FILE = "verified_users.json"
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import json, os
 
-def load_verified():
-    if not os.path.exists(VERIFIED_FILE):
-        return []
-    with open(VERIFIED_FILE, "r") as f:
+app = Flask(__name__)
+CORS(app)
+
+FILE = "completed.json"
+
+if not os.path.exists(FILE):
+    with open(FILE, "w") as f:
+        json.dump([], f)
+
+def load():
+    with open(FILE, "r") as f:
         return json.load(f)
 
-def save_verified(users):
-    with open(VERIFIED_FILE, "w") as f:
-        json.dump(users, f, indent=2)
+def save(data):
+    with open(FILE, "w") as f:
+        json.dump(data, f, indent=2)
 
+@app.route("/complete")
+def complete():
+    user = request.args.get("user")
+    if not user:
+        return "Missing username", 400
 
-@app.route("/verify-user", methods=["POST"])
-def verify_user():
-    data = request.json
-    username = data.get("username", "").strip()
+    data = load()
+    if user not in data:
+        data.append(user)
+        save(data)
 
-    users = load_verified()
+    return "✅ Completed! Go back to Telegram and type /claim"
 
-    if username not in users:
-        users.append(username)
-        save_verified(users)
+@app.route("/check", methods=["POST"])
+def check():
+    username = request.json.get("username")
+    data = load()
 
-    return jsonify({"status": "verified"})
+    if username in data:
+        return jsonify({"verified": True})
+
+    return jsonify({"verified": False})
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
