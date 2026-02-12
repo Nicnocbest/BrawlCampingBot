@@ -1,13 +1,10 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 import json, os
 
 app = Flask(__name__)
-CORS(app)
 
-FILE = "completed.json"
+FILE = "completed_tokens.json"
 
-# create file if missing
 if not os.path.exists(FILE):
     with open(FILE, "w") as f:
         json.dump([], f)
@@ -23,45 +20,34 @@ def save(data):
         json.dump(data, f, indent=2)
 
 
-# ============================
-# LINKVERTISE REDIRECT ENDPOINT
-# ============================
 @app.route("/complete")
 def complete():
-    user = request.args.get("user")
+    token = request.args.get("token")
 
-    if not user:
-        return "❌ Missing username", 400
+    if not token:
+        return "❌ Missing token", 400
 
     data = load()
 
-    if user not in data:
-        data.append(user)
+    if token not in data:
+        data.append(token)
         save(data)
 
-    return "✅ Completed! Go back to Telegram and type /claim"
+    return "✅ Completed! Go back to Telegram and type:\n/claim YOURTOKEN"
 
 
-# ============================
-# BOT CHECK ENDPOINT (ONE TIME)
-# ============================
 @app.route("/check", methods=["POST"])
 def check():
-    username = request.json.get("username")
+    token = request.json.get("token")
     data = load()
 
-    if username in data:
-        # remove user after successful claim
-        data.remove(username)
+    if token in data:
+        data.remove(token)
         save(data)
-
         return jsonify({"verified": True})
 
     return jsonify({"verified": False})
 
 
-# ============================
-# RUN
-# ============================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
