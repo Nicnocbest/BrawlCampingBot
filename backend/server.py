@@ -3,51 +3,50 @@ import json, os
 
 app = Flask(__name__)
 
-FILE = "completed_tokens.json"
+FILE = "completed.json"
 
 if not os.path.exists(FILE):
     with open(FILE, "w") as f:
         json.dump([], f)
 
 
-def load():
+def load_tokens():
     with open(FILE, "r") as f:
         return json.load(f)
 
 
-def save(data):
+def save_tokens(tokens):
     with open(FILE, "w") as f:
-        json.dump(data, f, indent=2)
+        json.dump(tokens, f, indent=2)
 
 
 @app.route("/complete")
 def complete():
     token = request.args.get("token")
-
     if not token:
-        return "❌ Missing token", 400
+        return "Missing token", 400
 
-    data = load()
+    tokens = load_tokens()
 
-    if token not in data:
-        data.append(token)
-        save(data)
+    if token not in tokens:
+        tokens.append(token)
+        save_tokens(tokens)
 
-    return "✅ Completed! Go back to Telegram and type:\n/claim YOURTOKEN"
+    return "✅ Completed! Go back to Telegram and type /claim"
 
 
 @app.route("/check", methods=["POST"])
 def check():
-    token = request.json.get("token")
-    data = load()
+    data = request.json
+    token = data.get("token")
 
-    if token in data:
-        data.remove(token)
-        save(data)
-        return jsonify({"verified": True})
+    tokens = load_tokens()
 
-    return jsonify({"verified": False})
+    if token not in tokens:
+        return jsonify({"ok": False}), 403
+
+    return jsonify({"ok": True})
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run()
