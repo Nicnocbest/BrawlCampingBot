@@ -1,10 +1,15 @@
 from flask import Flask, request, jsonify
-import json, os
+import json
+import os
 
 app = Flask(__name__)
 
 FILE = "completed.json"
 
+
+# =========================
+# INIT FILE
+# =========================
 if not os.path.exists(FILE):
     with open(FILE, "w") as f:
         json.dump([], f)
@@ -20,11 +25,15 @@ def save_tokens(tokens):
         json.dump(tokens, f, indent=2)
 
 
+# =========================
+# LINKVERTISE COMPLETION
+# =========================
 @app.route("/complete")
 def complete():
     token = request.args.get("token")
+
     if not token:
-        return "Missing token", 400
+        return "❌ Missing token", 400
 
     tokens = load_tokens()
 
@@ -32,9 +41,16 @@ def complete():
         tokens.append(token)
         save_tokens(tokens)
 
-    return "✅ Completed! Go back to Telegram and type /claim"
+    return f"""
+    ✅ Linkvertise Completed!<br><br>
+    Now go back to Telegram and type:<br><br>
+    <b>/claim {token}</b>
+    """
 
 
+# =========================
+# BOT CHECK TOKEN
+# =========================
 @app.route("/check", methods=["POST"])
 def check():
     data = request.json
@@ -42,11 +58,27 @@ def check():
 
     tokens = load_tokens()
 
+    # ❌ Token not completed
     if token not in tokens:
         return jsonify({"ok": False}), 403
+
+    # ✅ Token valid → remove (1-time use)
+    tokens.remove(token)
+    save_tokens(tokens)
 
     return jsonify({"ok": True})
 
 
+# =========================
+# HOME (OPTIONAL)
+# =========================
+@app.route("/")
+def home():
+    return "✅ BrawlStarsAutoplay Backend Running"
+
+
+# =========================
+# RUN LOCAL
+# =========================
 if __name__ == "__main__":
-    app.run()
+    app.run(host="0.0.0.0", port=5000)
