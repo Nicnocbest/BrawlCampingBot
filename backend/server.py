@@ -1,48 +1,58 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 import json
+import os
 import random
 import string
-import os
 
 app = Flask(__name__)
 
-TOKENS_FILE = "completed.json"
+TOKENS_FILE = "completed_tokens.json"
 
-# ============================
-# INIT TOKEN STORAGE
-# ============================
+
+# ==========================
+# INIT FILE
+# ==========================
+
 if not os.path.exists(TOKENS_FILE):
     with open(TOKENS_FILE, "w") as f:
         json.dump({}, f)
 
 
-# ============================
-# CREATE RANDOM TOKEN
-# ============================
-def create_token():
-    return "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
-
-
-# ============================
-# SAVE TOKEN
-# ============================
-def save_token(token):
+def load_tokens():
     with open(TOKENS_FILE, "r") as f:
-        data = json.load(f)
+        return json.load(f)
 
-    data[token] = False  # False = not used yet
 
+def save_tokens(data):
     with open(TOKENS_FILE, "w") as f:
         json.dump(data, f, indent=2)
 
 
-# ============================
-# COMPLETE LINKVERTISE
-# ============================
+def generate_token():
+    return "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
+
+
+# ==========================
+# HOME
+# ==========================
+
+@app.route("/")
+def home():
+    return "✅ Backend Running"
+
+
+# ==========================
+# LINKVERTISE COMPLETE
+# ==========================
+
 @app.route("/complete")
 def complete():
-    token = create_token()
-    save_token(token)
+    tokens = load_tokens()
+
+    token = generate_token()
+
+    tokens[token] = False  # False = unused
+    save_tokens(tokens)
 
     return f"""
     <h2>✅ Linkvertise Completed!</h2>
@@ -51,30 +61,37 @@ def complete():
     """
 
 
-# ============================
-# CHECK TOKEN VALID
-# ============================
-@app.route("/check/<token>")
-def check_token(token):
-    with open(TOKENS_FILE, "r") as f:
-        data = json.load(f)
+# ==========================
+# CHECK TOKEN
+# ==========================
 
-    if token not in data:
-        return {"valid": False}
+@app.route("/check")
+def check():
+    token = request.args.get("token")
 
-    if data[token] is True:
-        return {"valid": False}
+    if not token:
+        return jsonify({"completed": False})
 
-    # mark as used
-    data[token] = True
-    with open(TOKENS_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+    tokens = load_tokens()
 
-    return {"valid": True}
+    # Token not found
+    if token not in tokens:
+        return jsonify({"completed": False})
+
+    # Already used
+    if tokens[token] is True:
+        return jsonify({"completed": False})
+
+    # Mark as used
+    tokens[token] = True
+    save_tokens(tokens)
+
+    return jsonify({"completed": True})
 
 
-# ============================
-# RUN SERVER
-# ============================
+# ==========================
+# RUN LOCAL
+# ==========================
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
